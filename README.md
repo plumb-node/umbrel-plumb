@@ -15,8 +15,9 @@ itself built on Umbrel's Bitcoin Node app, with these changes:
   recommended `plumb.conf` on [cesspool.lol/check](https://cesspool.lol/check/).
 - The app shows Plumb's name and logo.
 
-Install it from the Plumb community app store:
-[plumb-node/umbrel-store](https://github.com/plumb-node/umbrel-store).
+Install it from Leo Haf's Misc community app store,
+[Horizon-btc/Bitcoin-store](https://github.com/Horizon-btc/Bitcoin-store), where it
+is the btc-plumb app.
 
 ## Images
 
