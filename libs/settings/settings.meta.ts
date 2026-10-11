@@ -666,12 +666,12 @@ export const settingsMetadata = {
 	version: {
 		tab: 'version',
 		kind: 'select',
-		label: 'Bitcoin Knots Version',
+		label: 'Plumb Version',
 		bitcoinLabel: 'version',
 		description:
-			'Select whether to always run the latest version of Bitcoin Knots available in the Bitcoin Node app, or stay on a specific version until you change it manually. Your Bitcoin Node app will continue to receive updates from the Umbrel App Store even if you decide to stay on a specific version.',
+			'Select whether to always run the newest Plumb release in this app, or stay on a specific release until you change it manually. The app keeps receiving updates from its store either way.',
 		subDescription:
-			'⚠ If you choose to stay on a specific version, please make sure your chosen version is up to date with the latest security fixes.',
+			'If you stay on a specific release, make sure it has the latest security fixes.',
 		options: [
 			{value: LATEST, label: 'Always use the latest version'},
 			...AVAILABLE_BITCOIN_KNOTS_VERSIONS.map((version) => ({value: version, label: version})),

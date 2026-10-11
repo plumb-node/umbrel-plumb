@@ -47,7 +47,7 @@ export default function CustomConfigEditor() {
 				disabled={!canSave}
 				onClick={() =>
 					save.mutate(text, {
-						onSuccess: () => toast.success('Overrides saved; restarting Bitcoin Knots…'),
+						onSuccess: () => toast.success('Overrides saved; restarting Plumb…'),
 						onError: (e) => toast.error(e instanceof Error ? e.message : 'Failed to save overrides'),
 					})
 				}

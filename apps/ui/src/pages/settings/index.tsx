@@ -468,7 +468,7 @@ export default function SettingsCard() {
 	const onUpdateSettings = (data: SettingsSchema) => {
 		// If the mutation takes longer than 1 second, we show a loading toast
 		updateTimer.current = setTimeout(() => {
-			updateToastId.current = toast.loading('Hang tight, Bitcoin Knots is restarting...', {duration: Infinity})
+			updateToastId.current = toast.loading('Hang tight, Plumb is restarting...', {duration: Infinity})
 		}, 1000)
 
 		updateSettings.mutate(data, {
@@ -505,7 +505,7 @@ export default function SettingsCard() {
 	const onRestoreDefaults = () => {
 		// If the mutation takes longer than 1 second, we show a loading toast
 		restoreTimer.current = setTimeout(() => {
-			restoreToastId.current = toast.loading('Hang tight, Bitcoin Knots is restarting...', {duration: Infinity})
+			restoreToastId.current = toast.loading('Hang tight, Plumb is restarting...', {duration: Infinity})
 		}, 1000)
 
 		restoreDefaults.mutate(undefined, {
@@ -563,7 +563,7 @@ export default function SettingsCard() {
 		{value: 'optimization', label: 'Optimization'},
 		{value: 'rpc-rest', label: 'RPC and REST'},
 		{value: 'network', label: 'Network Selection'},
-		{value: 'version', label: 'Bitcoin Knots Version'},
+		{value: 'version', label: 'Plumb Version'},
 		{value: 'advanced', label: 'Advanced'},
 	] as const
 
@@ -724,8 +724,8 @@ export default function SettingsCard() {
 													return (
 														<div className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3'>
 															<p className='text-orange-200 text-xs'>
-																You have manually chosen to stay on Bitcoin Knots Version {currentVersion}. Restoring
-																defaults will use the default settings for Bitcoin Knots {currentVersion}, not the latest
+																You have manually chosen to stay on Plumb Version {currentVersion}. Restoring
+																defaults will use the default settings for Plumb {currentVersion}, not the latest
 																version.
 															</p>
 														</div>

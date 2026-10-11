@@ -128,7 +128,7 @@ export class BitcoindManager {
 		try {
 			const firstLine = execFileSync(this.bin, ['--version']).toString().split('\n')[0]
 			const implementation = firstLine.replace(/(?:daemon|RPC client)?\s*version.*$/i, '').trim()
-			const version = (firstLine.match(/v\d+\.\d+(?:\.\d+)?(?:\.knots\d+)?(?:\+[\w.-]+)?/) ?? ['unknown'])[0]
+			const version = (firstLine.match(/v\d+\.\d+(?:\.\d+)?(?:\.knots\d+)?(?:\.plumb\d+)?(?:\+[\w.-]+)?/) ?? ['unknown'])[0]
 			return {implementation, version}
 		} catch {
 			return {implementation: 'unknown', version: 'unknown'}
@@ -147,7 +147,7 @@ export class BitcoindManager {
 		if (!isVersionInstalled(version)) {
 			// Reflect the desired version in versionInfo so the UI shows intent, not the current symlink
 			this.versionInfo = {...this.versionInfo, version}
-			const msg = `Bitcoin Knots version "${version}" is not installed (missing: ${BITCOIN_KNOTS_VERSIONS_DIR}/${version}/bitcoind).`
+			const msg = `Plumb version "${version}" is not installed (missing: ${BITCOIN_KNOTS_VERSIONS_DIR}/${version}/bitcoind).`
 			this.lastError = new Error(msg)
 			this.exitInfo = {
 				code: null,
@@ -196,7 +196,7 @@ export class BitcoindManager {
 				code,
 				sig,
 				logTail: [...this.logRing],
-				message: `Bitcoin Knots stopped (code ${code ?? 'null'})`,
+				message: `Plumb stopped (code ${code ?? 'null'})`,
 			}
 
 			this.events.emit('exit', this.exitInfo)
