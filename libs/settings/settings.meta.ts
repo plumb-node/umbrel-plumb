@@ -391,6 +391,54 @@ export const settingsMetadata = {
 		default: true,
 	},
 
+	// Plumb's own filters (plumb/filters.json in github.com/plumb-node/plumb). Each is on by default in
+	// Plumb and its key is the bitcoind option name, since the config writer uses the key.
+	rejectfakeoutputs: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject fake output hashes and keys',
+		bitcoinLabel: 'rejectfakeoutputs',
+		description: 'Counts outputs whose hash or key is data as data carrier bytes.',
+		default: true,
+	},
+
+	rejectdeadbranches: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject data in dead conditional branches',
+		bitcoinLabel: 'rejectdeadbranches',
+		description: 'Counts data in a conditional branch that constants make unreachable.',
+		default: true,
+	},
+
+	rejectbareenvelopes: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject bare data envelopes',
+		bitcoinLabel: 'rejectbareenvelopes',
+		description: 'Counts a run of pushes ended by OP_DROP or OP_2DROP as data carrier bytes.',
+		default: true,
+	},
+
+	rejectfakemultisig: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject fake multisig keys',
+		bitcoinLabel: 'rejectfakemultisig',
+		description:
+			'Counts the keys of a multisig that no signature in the spend proves, beyond 10 per script, as data carrier bytes.',
+		default: true,
+	},
+
+	rejecttokenmessages: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject token messages',
+		bitcoinLabel: 'rejecttokenmessages',
+		description: 'Refuses an OP_RETURN that holds a JSON token message or an Omni Layer message.',
+		default: true,
+	},
+
 	permitbarepubkey: {
 		tab: 'policy',
 		kind: 'toggle',
