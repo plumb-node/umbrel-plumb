@@ -1,35 +1,33 @@
-<p align="center">
-  <a href="https://apps.umbrel.com/app/bitcoin">
-    <img src="https://github.com/user-attachments/assets/b9ff1e96-f899-41e3-8295-3247b88f6f79" alt="Logo">
-  </a>
-  <h1 align="center">Bitcoin Node</h1>
-  <p align="center">
-    Run a Bitcoin node on your umbrelOS personal server. An official app by Umbrel. Powered by Bitcoin Knots.
-    <br />
-    <a href="https://umbrel.com"><strong>umbrel.com »</strong></a>
-    <br />
-    <br />
-    <a href="https://twitter.com/umbrel">
-      <img src="https://img.shields.io/twitter/follow/umbrel?style=social" />
-    </a>
-    <a href="https://t.me/getumbrel">
-      <img src="https://img.shields.io/badge/community-chat-%235351FB">
-    </a>
-    <a href="https://reddit.com/r/getumbrel">
-      <img src="https://img.shields.io/reddit/subreddit-subscribers/getumbrel?style=social">
-    </a>
-    <a href="https://community.getumbrel.com">
-      <img src="https://img.shields.io/badge/community-forum-%235351FB">
-    </a>
-  </p>
-</p>
+# Plumb for Umbrel
 
-## Getting started
+The Umbrel app image for [Plumb](https://github.com/plumb-node/plumb), Bitcoin
+Knots with every reviewed spam filter on by default. It is Leo Haf's Bitcoin
+Knots app for Umbrel ([Retropex/umbrel-bitcoin](https://github.com/Retropex/umbrel-bitcoin)),
+itself built on Umbrel's Bitcoin Node app, with these changes:
 
-This app can be installed in one click from the [Umbrel App Store](https://apps.umbrel.com/app/bitcoin-knots).
+- `bitcoind` and `bitcoin-cli` come from the signed Plumb release tarball. The
+  image build stops unless `SHA256SUMS` carries a good signature from Jason
+  Sopko's key, `89F0 E41D 72CE 523F 4AA1 CDB6 92CD FFB7 C40C D1BA`
+  (`plumb/keys/`), and the tarball matches it. See the `plumb` stage in
+  `apps/backend/Dockerfile`.
+- Plumb's five filters are switches on the Policy tab, on by default.
+- The data size starts at 42 bytes and the data cost at 2, the values in the
+  recommended `plumb.conf` on [cesspool.lol/check](https://cesspool.lol/check/).
+- The app shows Plumb's name and logo.
+
+Install it from the Plumb community app store:
+[plumb-node/umbrel-store](https://github.com/plumb-node/umbrel-store).
+
+## Images
+
+`ghcr.io/plumb-node/umbrel-plumb`, for linux/amd64 and linux/arm64, built by
+`.github/workflows/on-tag.yml` on each `v*` tag. The run summary prints the
+image with its index digest, which the store's `docker-compose.yml` pins.
+
+For a new Plumb release, change `PLUMB_VERSION`, `PLUMB_SHA256SUMS` and the
+`/opt/bitcoind` paths in `apps/backend/Dockerfile`, and the version in
+`AVAILABLE_BITCOIN_KNOTS_VERSIONS` (`libs/settings/settings.meta.ts`), then tag.
 
 ---
 
 [![License](https://img.shields.io/github/license/getumbrel/umbrel-bitcoin?color=%235351FB)](https://github.com/getumbrel/umbrel-bitcoin/blob/master/LICENSE.md)
-
-[umbrel.com](https://umbrel.com)
