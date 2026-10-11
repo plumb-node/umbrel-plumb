@@ -14,6 +14,7 @@ import {
 	DefaultValuesForVersion,
 	resolveVersion,
 	LATEST,
+	VERSION_CHOICES,
 } from '#settings'
 
 const LEGACY_CONFIG_PATH = path.join(APP_STATE_DIR, 'bitcoin-config.json')
@@ -177,6 +178,26 @@ export async function migrateBip110() {
 	if (config.version === "BIP110") {
 		config.version = "latest"
 		config.consensusrules = true
+		await writeWithBackup(SETTINGS_JSON, JSON.stringify(config, null, 2) + '\n')
+	}
+}
+
+// A version pinned on the version tab that this release no longer ships (an older Plumb release)
+// fails validation, and bitcoind never starts. Move it back to 'latest'. Runs after migrateBip110,
+// which handles its own value.
+export async function migrateUnavailableVersion() {
+	if (!(await fse.pathExists(SETTINGS_JSON))) return
+
+	const config = await fse.readJson(SETTINGS_JSON).catch((err) => {
+		const msg =
+			err instanceof SyntaxError
+				? '[migration] Invalid JSON in settings.json'
+				: '[migration] Unable to read settings.json'
+		throw new Error(`${msg}: ${err.message}`)
+	})
+
+	if (typeof config.version === 'string' && !(VERSION_CHOICES as readonly string[]).includes(config.version)) {
+		config.version = LATEST
 		await writeWithBackup(SETTINGS_JSON, JSON.stringify(config, null, 2) + '\n')
 	}
 }

@@ -16,7 +16,7 @@ import {
 	type SettingsSchema,
 	type SelectedVersion,
 } from '#settings'
-import {migrateBip110, migrateLegacyConfig} from './migration.js'
+import {migrateBip110, migrateLegacyConfig, migrateUnavailableVersion} from './migration.js'
 
 const BITCOIN_CONF_INCLUDE_LINE = `includeconf=${path.basename(UMBREL_BITCOIN_CONF)}`
 
@@ -366,6 +366,9 @@ export async function ensureConfig(): Promise<SettingsSchema> {
 	
 	// migrate the BIP110 version to the latest version of Knots since it's now in Knots.
 	await migrateBip110()
+
+	// move a pinned version this release no longer ships back to latest
+	await migrateUnavailableVersion()
 
 	// Write out settings.json
 	const settings = applyDerivedSettings(await loadAndValidateSettings())
