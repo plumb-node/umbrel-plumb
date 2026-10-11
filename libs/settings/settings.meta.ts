@@ -360,7 +360,7 @@ export const settingsMetadata = {
 		bitcoinLabel: 'datacarriersize',
 		description: 'Set the maximum size of the data in OP_RETURN outputs (in bytes) that your node will relay.',
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
-		default: 83,
+		default: 42,
 		unit: 'bytes',
 	},
 
@@ -416,7 +416,7 @@ export const settingsMetadata = {
 		bitcoinLabel: 'datacarriercost',
 		description: 'Treat extra data in transactions as at least N vbytes per actual byte.',
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
-		default: 1,
+		default: 2,
 	},
 
 	acceptnonstddatacarrier: {
