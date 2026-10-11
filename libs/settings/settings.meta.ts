@@ -4,11 +4,12 @@
 // - The frontend settings page (React form inputs, descriptions, tool-tips, etc.)
 // To add a new bitcoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
 
-// Available Bitcoin Knots versions
+// Available Plumb versions
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.2.knots20260508', 'v29.4.2.knots20260508rc2', 'v29.4.1.knots20260508', 'v29.4.1.knots20260508rc5', 'v29.4.1.knots20260508rc4', 'v29.4.knots20260508', 'v29.3.knots20260508', 'v29.3.knots20260507', 'v29.3.knots20260210', 'v29.2.knots20251110','v29.2', 'v29.1'] as const
+// - Plumb ships one release; every setting below is written for it, so none carries introducedIn, removedIn or versionOverrides.
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.2.knots20260508.plumb6'] as const
 
 // Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
 export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]
@@ -359,21 +360,8 @@ export const settingsMetadata = {
 		bitcoinLabel: 'datacarriersize',
 		description: 'Set the maximum size of the data in OP_RETURN outputs (in bytes) that your node will relay.',
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
-		default: 42,
+		default: 83,
 		unit: 'bytes',
-		versionOverrides: {
-			// v29.2.knots20251110 changed the default and max so we declare a tiny diff
-			'v29.4.2.knots20260508': {default: 83},
-			'v29.4.2.knots20260508rc2': {default: 83},
-			'v29.4.1.knots20260508': {default: 83},
-			'v29.4.1.knots20260508rc5': {default: 83},
-			'v29.4.1.knots20260508rc4': {default: 83},
-			'v29.4.knots20260508': {default: 83},
-			'v29.3.knots20260508': {default: 83},
-			'v29.3.knots20260507': {default: 83},
-			'v29.3.knots20260210': {default: 83},
-			'v29.2.knots20251110': {default: 83},
-		},
 	},
 
 	permitbaremultisig: {
@@ -615,17 +603,6 @@ export const settingsMetadata = {
 		unit: 'requests',
 	},
 	
-	datum: {
-		tab: 'optimization',
-		kind: 'toggle',
-		label: 'Enable blocknotify for datum',
-		bitcoinLabel: 'datum',
-		description:
-			'Enable blocknotify for datum to avoid mining stale work.',
-		default: true,
-		removedIn: 'v29.4.1.knots20260508rc4'
-	},
-
 	mineblake2: {
 		tab: 'optimization',
 		kind: 'toggle',
@@ -634,7 +611,6 @@ export const settingsMetadata = {
 		description:
 			'Enable blocknotify for datum to avoid mining stale work.',
 		default: true,
-		introducedIn: 'v29.4.1.knots20260508rc4'
 	},
 
 	/* ===== Version tab ===== */

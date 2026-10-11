@@ -12,20 +12,43 @@
 #  – bitcoind + bitcoin-cli binaries
 
 ###########################################
-# Bitcoind
+# Bitcoind: the signed Plumb release for the target platform
 ###########################################
-FROM ghcr.io/retropex/bitcoin:29.4.2.knots20260508@sha256:0e634291a038dfc64b8fe0b6e7d12828f269e8592879811f7c04d4fabffe9f97 AS bitcoind_29_4_5
-FROM ghcr.io/retropex/bitcoin:29.4.2.knots20260508rc2@sha256:e464c954db9e803696e7aebc4b2fe5167b4b155647e2e08875a85cf4ebb601b8 AS bitcoind_29_4_4
-FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508@sha256:eab5815b272f99b33e8170a008d7ac18005c8c824383b93276c0a178e335183b AS bitcoind_29_4_3
-FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508rc5@sha256:d56e0e655218719332059608438788adf50e2ead11a8d4c47677ac51c6cfac96 AS bitcoind_29_4_2
-FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508rc4@sha256:a8e9081c9277108077c1f92436fbd7322a11cb2597da97ac301661cfc55fb64e AS bitcoind_29_4_1
-FROM ghcr.io/retropex/bitcoin:29.4.knots20260508@sha256:c8a561261565db77ef6a551013abd057d3e3ab9dea8535ba00a781b8d72d0619 AS bitcoind_29_4
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260508@sha256:5dabd6ddb1eb47ab87ce5d2a1eb478472eedf2f5967993a824c3e25c6890df98 AS bitcoind_29_3_3
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260507@sha256:366a8d1a939b002291a134aee6e03d1a10379f8dead646f8d30b296b88ee8380 AS bitcoind_29_3_2
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260210@sha256:fde0aeddc8fd04818e91e185c9eb43980b5d1a132bdc4bdcb681b20b1fad0b94 AS bitcoind_29_3
-FROM ghcr.io/retropex/bitcoin:29.2.knots20251110@sha256:8b58084882c8abad948f2d154d46595a9147c1f4a5bd578ebabf68583905e305 AS bitcoind_29_2_2
-FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind_29_2
-FROM ghcr.io/retropex/bitcoin:29.1@sha256:da5bb600703a7ed885f64dbe93a5cd970138f28319f2074b51e3544e141711ed AS bitcoind_29_1
+# Runs on the build machine's own platform and picks the tarball for the target one, so the arm64
+# image needs no emulation here. The keyring must hold exactly the pinned key, SHA256SUMS must match
+# its pinned hash and carry a good signature from that key, and the tarball must match SHA256SUMS.
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS plumb
+ARG TARGETARCH
+# One Plumb release. Change these two together, and the version in libs/settings/settings.meta.ts.
+ARG PLUMB_VERSION=29.4.2.knots20260508.plumb6
+ARG PLUMB_SHA256SUMS=645725e1a024f5a9e027f0addac17ea2925621ab23db5087381918007403c440
+ENV PLUMB_SIGNER=89F0E41D72CE523F4AA1CDB692CDFFB7C40CD1BA
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+ && rm -rf /var/lib/apt/lists/*
+COPY plumb/keys/ /tmp/plumb-keys/
+WORKDIR /tmp/plumb
+RUN set -e; \
+    export GNUPGHOME="$(mktemp -d)" LC_ALL=C; \
+    case "${TARGETARCH}" in amd64) ARCH=x86_64 ;; arm64) ARCH=aarch64 ;; *) echo "Unsupported TARGETARCH ${TARGETARCH}"; exit 1 ;; esac; \
+    gpg --quiet --import /tmp/plumb-keys/*.asc; \
+    if [ "$(gpg --with-colons --list-keys | grep -c '^pub:')" != 1 ] || \
+       [ "$(gpg --with-colons --list-keys | awk -F: '/^fpr:/{print $10; exit}')" != "${PLUMB_SIGNER}" ]; then \
+        echo "KEYRING IS NOT EXACTLY THE PINNED PLUMB KEY"; exit 1; \
+    fi; \
+    TARBALL="bitcoin-${PLUMB_VERSION}-${ARCH}-linux-gnu.tar.gz"; \
+    BASE="https://github.com/plumb-node/plumb/releases/download/v${PLUMB_VERSION}"; \
+    curl -fsSL --fail-early -o SHA256SUMS "${BASE}/SHA256SUMS" -o SHA256SUMS.asc "${BASE}/SHA256SUMS.asc" -o "${TARBALL}" "${BASE}/${TARBALL}"; \
+    echo "${PLUMB_SHA256SUMS}  SHA256SUMS" | sha256sum -c -; \
+    gpg --status-fd 1 --verify SHA256SUMS.asc SHA256SUMS > verify.txt 2>/dev/null || true; \
+    if ! grep -q '^\[GNUPG:\] GOODSIG ' verify.txt || \
+       ! grep -q "^\[GNUPG:\] VALIDSIG .* ${PLUMB_SIGNER}\$" verify.txt; then \
+        cat verify.txt; echo "SHA256SUMS IS NOT SIGNED BY THE PINNED PLUMB KEY"; exit 1; \
+    fi; \
+    grep " ${TARBALL}\$" SHA256SUMS | sha256sum -c -; \
+    mkdir -p /out; \
+    tar -xzf "${TARBALL}" -C /out --strip-components=2 "bitcoin-${PLUMB_VERSION}/bin/bitcoind" "bitcoin-${PLUMB_VERSION}/bin/bitcoin-cli"; \
+    echo "Plumb ${PLUMB_VERSION} ${ARCH}: SHA256SUMS signed by ${PLUMB_SIGNER}"; \
+    sha256sum /out/bitcoind /out/bitcoin-cli
 
 ##########################################################
 # Dependencies layer — install every workspace deps
@@ -57,38 +80,16 @@ WORKDIR /repo/apps/backend
 VOLUME /data
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.2.knots20260508 /opt/bitcoind/v29.4.2.knots20260508rc2 /opt/bitcoind/v29.4.1.knots20260508 /opt/bitcoind/v29.4.1.knots20260508rc5 /opt/bitcoind/v29.4.1.knots20260508rc4 /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/v29.3.knots20260508 /opt/bitcoind/v29.3.knots20260507 /opt/bitcoind/v29.3.knots20260210 /opt/bitcoind/v29.2.knots20251110 /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
-COPY --from=bitcoind_29_4_5 /bin/bitcoind    /opt/bitcoind/v29.4.2.knots20260508/bitcoind
-COPY --from=bitcoind_29_4_5 /bin/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_4_4 /bin/bitcoind    /opt/bitcoind/v29.4.2.knots20260508rc2/bitcoind
-COPY --from=bitcoind_29_4_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508rc2/bitcoin-cli
-COPY --from=bitcoind_29_4_3 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508/bitcoind
-COPY --from=bitcoind_29_4_3 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_4_2 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc5/bitcoind
-COPY --from=bitcoind_29_4_2 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc5/bitcoin-cli
-COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc4/bitcoind
-COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc4/bitcoin-cli
-COPY --from=bitcoind_29_4 /bin/bitcoind    /opt/bitcoind/v29.4.knots20260508/bitcoind
-COPY --from=bitcoind_29_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260508/bitcoind
-COPY --from=bitcoind_29_3_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_2 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260507/bitcoind
-COPY --from=bitcoind_29_3_2 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260507/bitcoin-cli
-COPY --from=bitcoind_29_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260210/bitcoind
-COPY --from=bitcoind_29_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260210/bitcoin-cli
-COPY --from=bitcoind_29_2_2 /bin/bitcoind    /opt/bitcoind/v29.2.knots20251110/bitcoind
-COPY --from=bitcoind_29_2_2 /bin/bitcoin-cli /opt/bitcoind/v29.2.knots20251110/bitcoin-cli
-COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
-COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
-COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
-COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.2.knots20260508.plumb6
+COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.2.knots20260508.plumb6/bitcoind
+COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508.plumb6/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
-# By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.2.knots20260508 /opt/bitcoind/current
+# By default we point to the Plumb release
+RUN ln -sfn /opt/bitcoind/v29.4.2.knots20260508.plumb6 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
@@ -137,38 +138,16 @@ COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.2.knots20260508 /opt/bitcoind/v29.4.2.knots20260508rc2 /opt/bitcoind/v29.4.1.knots20260508 /opt/bitcoind/v29.4.1.knots20260508rc5 /opt/bitcoind/v29.4.1.knots20260508rc4 /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/v29.3.knots20260508 /opt/bitcoind/v29.3.knots20260507 /opt/bitcoind/v29.3.knots20260210 /opt/bitcoind/v29.2.knots20251110 /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
-COPY --from=bitcoind_29_4_5 /bin/bitcoind    /opt/bitcoind/v29.4.2.knots20260508/bitcoind
-COPY --from=bitcoind_29_4_5 /bin/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_4_4 /bin/bitcoind    /opt/bitcoind/v29.4.2.knots20260508rc2/bitcoind
-COPY --from=bitcoind_29_4_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508rc2/bitcoin-cli
-COPY --from=bitcoind_29_4_3 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508/bitcoind
-COPY --from=bitcoind_29_4_3 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_4_2 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc5/bitcoind
-COPY --from=bitcoind_29_4_2 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc5/bitcoin-cli
-COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc4/bitcoind
-COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc4/bitcoin-cli
-COPY --from=bitcoind_29_4 /bin/bitcoind    /opt/bitcoind/v29.4.knots20260508/bitcoind
-COPY --from=bitcoind_29_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260508/bitcoind
-COPY --from=bitcoind_29_3_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_2 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260507/bitcoind
-COPY --from=bitcoind_29_3_2 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260507/bitcoin-cli
-COPY --from=bitcoind_29_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260210/bitcoind
-COPY --from=bitcoind_29_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260210/bitcoin-cli
-COPY --from=bitcoind_29_2_2 /bin/bitcoind    /opt/bitcoind/v29.2.knots20251110/bitcoind
-COPY --from=bitcoind_29_2_2 /bin/bitcoin-cli /opt/bitcoind/v29.2.knots20251110/bitcoin-cli
-COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
-COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
-COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
-COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.2.knots20260508.plumb6
+COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.2.knots20260508.plumb6/bitcoind
+COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.2.knots20260508.plumb6/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
-# By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.2.knots20260508 /opt/bitcoind/current
+# By default we point to the Plumb release
+RUN ln -sfn /opt/bitcoind/v29.4.2.knots20260508.plumb6 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
@@ -182,6 +161,10 @@ RUN mkdir -p /home/node \
  RUN apt-get update && apt-get install -y \
     curl
 
+
+# The release binaries link everything but glibc in; fail the build if this base lacks a library.
+RUN if ldd /opt/bitcoind/current/bitcoind /opt/bitcoind/current/bitcoin-cli | grep 'not found'; then exit 1; fi \
+ && d="$(mktemp -d)" && /opt/bitcoind/current/bitcoind -datadir="$d" -version | grep -F '.plumb' && rm -rf "$d"
 
 ENV NODE_ENV=production
 
