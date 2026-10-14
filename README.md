@@ -17,7 +17,9 @@ itself built on Umbrel's Bitcoin Node app, with these changes:
 
 Install it from Leo Haf's Misc community app store,
 [Horizon-btc/Bitcoin-store](https://github.com/Horizon-btc/Bitcoin-store), where it
-is the btc-plumb app.
+is the btc-plumb app. Step-by-step instructions, how to check it is running
+Plumb, and what to do when the install fails:
+[plumbnode.org/umbrel](https://plumbnode.org/umbrel/).
 
 ## Images
 
@@ -28,6 +30,11 @@ image with its index digest, which the store's `docker-compose.yml` pins.
 For a new Plumb release, change `PLUMB_VERSION`, `PLUMB_SHA256SUMS` and the
 `/opt/bitcoind` paths in `apps/backend/Dockerfile`, and the version in
 `AVAILABLE_BITCOIN_KNOTS_VERSIONS` (`libs/settings/settings.meta.ts`), then tag.
+
+Any change a user can see (store files, ports, addresses, settings labels, a
+new umbrelOS release) also means walking each step on
+[plumbnode.org/umbrel](https://plumbnode.org/umbrel/) and fixing it in the
+same change.
 
 ---
 
