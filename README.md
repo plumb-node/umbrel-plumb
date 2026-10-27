@@ -10,7 +10,8 @@ itself built on Umbrel's Bitcoin Node app, with these changes:
   Sopko's key, `89F0 E41D 72CE 523F 4AA1 CDB6 92CD FFB7 C40C D1BA`
   (`plumb/keys/`), and the tarball matches it. See the `plumb` stage in
   `apps/backend/Dockerfile`.
-- Plumb's five filters are switches on the Policy tab, on by default.
+- Plumb's four filters are switches on the Policy tab, on by default. Knots'
+  own `-rejectdeadbranches` has a switch there too.
 - The data size starts at 42 bytes and the data cost at 2, the values in the
   recommended `plumb.conf` on [cesspool.lol/check](https://cesspool.lol/check/).
 - The app shows Plumb's name and logo.

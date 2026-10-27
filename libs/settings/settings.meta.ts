@@ -391,8 +391,9 @@ export const settingsMetadata = {
 		default: true,
 	},
 
-	// Plumb's own filters (plumb/filters.json in github.com/plumb-node/plumb). Each is on by default in
-	// Plumb and its key is the bitcoind option name, since the config writer uses the key.
+	// Plumb's four filters (plumb/filters.json in github.com/plumb-node/plumb) and -rejectdeadbranches,
+	// a Knots option since 29.4.3 (knots#400) that was a Plumb filter until plumb8. Each is on by
+	// default and its key is the bitcoind option name, since the config writer uses the key.
 	rejectfakeoutputs: {
 		tab: 'policy',
 		kind: 'toggle',
@@ -402,6 +403,7 @@ export const settingsMetadata = {
 		default: true,
 	},
 
+	// Knots option since 29.4.3 (knots#400), not a Plumb filter; the switch stays.
 	rejectdeadbranches: {
 		tab: 'policy',
 		kind: 'toggle',
