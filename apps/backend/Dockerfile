@@ -54,7 +54,7 @@ RUN set -e; \
 # Dependencies layer — install every workspace deps
 # Functions as a shared cache for dev & app-builder stages
 ##########################################################
-FROM node:20-slim AS deps
+FROM node:24.22.1-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS deps
 WORKDIR /repo
 
 # Copy only dependency manifests to keep this layer cache-friendly
@@ -118,14 +118,15 @@ RUN tsc -b libs/shared-types libs/settings apps/backend \
 ########################################
 # runtime stage — final production image
 ########################################
-FROM node:20-slim AS runtime
+FROM node:24.22.1-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS runtime
 WORKDIR /app
 
 # Install production dependencies only
 # Note: import-map lives in package.json, so is also needed so Node can resolve "#settings/#types"
   COPY package*.json ./
   COPY apps/backend/package*.json apps/backend/
-  RUN npm ci --omit=dev --install-strategy=hoisted --ignore-scripts
+  RUN npm ci --omit=dev --install-strategy=hoisted --ignore-scripts \
+    && rm -rf /root/.npm /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Backend JS bundle
 COPY --from=app-builder /repo/apps/backend/dist ./dist
