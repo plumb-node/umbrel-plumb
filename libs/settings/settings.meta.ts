@@ -9,7 +9,7 @@
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
 // - Plumb ships one release; every setting below is written for it, so none carries introducedIn, removedIn or versionOverrides.
-export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.3.knots20260508.plumb8'] as const
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.3.knots20260508.plumb9'] as const
 
 // Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
 export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]

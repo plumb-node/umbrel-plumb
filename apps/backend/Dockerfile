@@ -20,8 +20,8 @@
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS plumb
 ARG TARGETARCH
 # One Plumb release. Change these two together, and the version in libs/settings/settings.meta.ts.
-ARG PLUMB_VERSION=29.4.3.knots20260508.plumb8
-ARG PLUMB_SHA256SUMS=0df3b788650b53658b6fd0570b2302e6887ccae72e3fc01fc0d7ddfa73dc395b
+ARG PLUMB_VERSION=29.4.3.knots20260508.plumb9
+ARG PLUMB_SHA256SUMS=c11c40bd45a773f438c3675695a8cdc3b412c1145b511ab6e68403ac5ae9107e
 ENV PLUMB_SIGNER=89F0E41D72CE523F4AA1CDB692CDFFB7C40CD1BA
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
  && rm -rf /var/lib/apt/lists/*
@@ -80,16 +80,16 @@ WORKDIR /repo/apps/backend
 VOLUME /data
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.3.knots20260508.plumb8
-COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.3.knots20260508.plumb8/bitcoind
-COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.3.knots20260508.plumb8/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.3.knots20260508.plumb9
+COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.3.knots20260508.plumb9/bitcoind
+COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.3.knots20260508.plumb9/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the Plumb release
-RUN ln -sfn /opt/bitcoind/v29.4.3.knots20260508.plumb8 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.3.knots20260508.plumb9 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
@@ -138,16 +138,16 @@ COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.3.knots20260508.plumb8
-COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.3.knots20260508.plumb8/bitcoind
-COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.3.knots20260508.plumb8/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.3.knots20260508.plumb9
+COPY --from=plumb /out/bitcoind    /opt/bitcoind/v29.4.3.knots20260508.plumb9/bitcoind
+COPY --from=plumb /out/bitcoin-cli /opt/bitcoind/v29.4.3.knots20260508.plumb9/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the Plumb release
-RUN ln -sfn /opt/bitcoind/v29.4.3.knots20260508.plumb8 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.3.knots20260508.plumb9 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
