@@ -11,7 +11,7 @@ itself built on Umbrel's Bitcoin Node app, with these changes:
   (`plumb/keys/`), and the tarball matches it. See the `plumb` stage in
   `apps/backend/Dockerfile`.
 - Plumb's four filters are switches on the Policy tab, on by default. Knots'
-  own `-rejectdeadbranches` has a switch there too.
+  own `-rejectdeadbranches` and `-rejectbpub` have switches there too.
 - The data size starts at 42 bytes and the data cost at 2, the values in the
   recommended `plumb.conf` on [cesspool.lol/check](https://cesspool.lol/check/).
 - The app shows Plumb's name and logo.

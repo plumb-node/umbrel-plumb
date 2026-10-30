@@ -391,9 +391,10 @@ export const settingsMetadata = {
 		default: true,
 	},
 
-	// Plumb's four filters (plumb/filters.json in github.com/plumb-node/plumb) and -rejectdeadbranches,
-	// a Knots option since 29.4.3 (knots#400) that was a Plumb filter until plumb8. Each is on by
-	// default and its key is the bitcoind option name, since the config writer uses the key.
+	// Plumb's four filters (plumb/filters.json in github.com/plumb-node/plumb) and two Knots options
+	// since 29.4.3: -rejectdeadbranches (knots#400), a Plumb filter until plumb8, and -rejectbpub
+	// (knots#463). Each is on by default and its key is the bitcoind option name, since the config
+	// writer uses the key.
 	rejectfakeoutputs: {
 		tab: 'policy',
 		kind: 'toggle',
@@ -410,6 +411,19 @@ export const settingsMetadata = {
 		label: 'Reject data in dead conditional branches',
 		bitcoinLabel: 'rejectdeadbranches',
 		description: 'Counts data in a conditional branch that constants make unreachable.',
+		default: true,
+	},
+
+	// Knots option since 29.4.3 (knots#463), not a Plumb filter. BPUBBytes (src/policy/policy.cpp)
+	// counts the bytes as non-standard data carrier bytes, and the mempool refuses any of those
+	// (txn-datacarrier-nonstandard) while acceptnonstddatacarrier, below, is off.
+	rejectbpub: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject BPUB files',
+		bitcoinLabel: 'rejectbpub',
+		description:
+			'Counts the witness scripts of inputs that carry a BPUB file (a file stored as fake public keys in 1-of-N multisig scripts) as non-standard data carrier bytes, so the transaction is refused while Accept non standard datacarrier is off.',
 		default: true,
 	},
 
