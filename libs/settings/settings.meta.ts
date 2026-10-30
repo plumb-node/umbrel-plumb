@@ -382,12 +382,17 @@ export const settingsMetadata = {
 		default: true,
 	},
 
+	// -rejecttokens refuses Runes, Counterparty and OLGA. Since plumb9 (knots#489) the JSON and Omni
+	// checks of rejecttokenmessages run only under it (src/policy/policy.cpp, IsStandardTx), so
+	// rejecttokens=0 turns those off too, although with rejecttokenmessages left on the startup
+	// line still says -rejecttokenmessages=1.
 	rejecttokens: {
 		tab: 'policy',
 		kind: 'toggle',
 		label: 'Reject tokens transactions',
 		bitcoinLabel: 'rejecttokens',
-		description: 'Reject token transactions (runes).',
+		description:
+			'Refuses transactions that carry non-bitcoin tokens: Runes, Counterparty and OLGA, and, while Reject token messages is on, JSON token messages (the BRC-20 format) and Omni Layer messages. Turning this off stops all of these checks, even with Reject token messages on.',
 		default: true,
 	},
 
@@ -451,7 +456,8 @@ export const settingsMetadata = {
 		kind: 'toggle',
 		label: 'Reject token messages',
 		bitcoinLabel: 'rejecttokenmessages',
-		description: 'Refuses an OP_RETURN that holds a JSON token message or an Omni Layer message.',
+		description:
+			'With Reject tokens transactions on, also refuses a transaction whose OP_RETURN holds a JSON token message (the BRC-20 format) or an Omni Layer message. With Reject tokens transactions off, this switch does nothing.',
 		default: true,
 	},
 
