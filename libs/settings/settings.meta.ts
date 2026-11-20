@@ -397,7 +397,7 @@ export const settingsMetadata = {
 		default: true,
 	},
 
-	// Plumb's four filters (plumb/filters.json in github.com/plumb-node/plumb) and two Knots options
+	// Plumb's five filters (plumb/filters.json in github.com/plumb-node/plumb) and two Knots options
 	// since 29.4.3: -rejectdeadbranches (knots#400), a Plumb filter until plumb8, and -rejectbpub
 	// (knots#463). Each is on by default and its key is the bitcoind option name, since the config
 	// writer uses the key.
@@ -459,6 +459,16 @@ export const settingsMetadata = {
 		bitcoinLabel: 'rejecttokenmessages',
 		description:
 			'With Reject tokens transactions on, also refuses a transaction whose OP_RETURN holds a JSON token message (the BRC-20 format) or an Omni Layer message. With Reject tokens transactions off, this switch does nothing.',
+		default: true,
+	},
+
+	rejectunverifiedwitness: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Reject unverified witness',
+		bitcoinLabel: 'rejectunverifiedwitness',
+		description:
+			'Counts the bytes of P2WSH, P2SH-P2WSH and tapscript witness items that no verified signature check used, beyond 42 per input, as data carrier bytes.',
 		default: true,
 	},
 
