@@ -514,7 +514,7 @@ export const settingsMetadata = {
 		kind: 'number',
 		label: 'Max script size',
 		bitcoinLabel: 'maxscriptsize',
-		description: 'Maximum size of scripts (including the entire witness stack) we relay and mine in bytes',
+		description: 'Maximum size of scripts (including the entire witness stack) we relay and mine in bytes. Plumb stops at startup if it is below 0 or above 4294967295.',
 		default: 1650,
 	},
 
