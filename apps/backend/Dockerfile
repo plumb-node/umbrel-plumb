@@ -17,7 +17,7 @@
 # Runs on the build machine's own platform and picks the tarball for the target one, so the arm64
 # image needs no emulation here. The keyring must hold exactly the pinned key, SHA256SUMS must match
 # its pinned hash and carry a good signature from that key, and the tarball must match SHA256SUMS.
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS plumb
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc AS plumb
 ARG TARGETARCH
 # One Plumb release. Change these two together, and the version in libs/settings/settings.meta.ts.
 ARG PLUMB_VERSION=29.5.1.knots20260508.plumb14
